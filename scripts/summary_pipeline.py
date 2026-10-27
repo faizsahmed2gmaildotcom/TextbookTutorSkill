@@ -367,6 +367,7 @@ def buildChapterContent(
     Returns:
         The ``all_content`` block passed to the chapter summarizer.
     """
+    print(json.dumps(enriched_toc, indent=2))
     chapter = enriched_toc.get("chapters", {}).get(task.chapter_id, {})
     section_summaries: list[str] = []
 
