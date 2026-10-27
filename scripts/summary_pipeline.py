@@ -501,6 +501,7 @@ def applySummaries(pdf_name: str) -> dict:
     parsed_path = config.getParsedTocPath(pdf_name)
     input(parsed_path)
 
+
     if not parsed_path.exists():
         raise FileNotFoundError(f"Parsed ToC not found: {parsed_path}")
 
