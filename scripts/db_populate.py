@@ -43,7 +43,7 @@ def requireFile(path, description: str) -> None:
     "--apply-summaries",
     "apply_summaries",
     is_flag=True,
-    help="Merge delegated summary outputs into the ToC files.",
+    help="Merge delegated summary outputs into the enriched ToC.",
 )
 def populateCommand(
     pdf_name: str,

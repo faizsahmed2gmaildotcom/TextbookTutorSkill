@@ -60,7 +60,7 @@ These are intentional, not bugs to fix:
 - Every other chapter's `end` is the next chapter's mapped `start - 1`.
 - A section's `end` equals the next section's mapped `start`, so adjacent sections share a boundary page.
 - The last section's `end` equals the chapter `end`.
-- `toc_parsed` keeps `thinking`; `toc_enriched` omits it.
+- `toc_parsed` keeps `thinking` and raw dotted section IDs (`"1.1"`); it is never rewritten after the ToC subagent writes it. `toc_enriched` omits `thinking` and uses normalized section IDs (`"1"`), which is why summaries are applied only there.
 
 Only crashes and data-shape problems were fixed: missing page labels no longer raise, empty provenance no longer raises, and chapter-level chunk rows are read correctly.
 
@@ -89,4 +89,4 @@ Empty-string IDs, rather than `null`, keep `WHERE` filters working for chapter-l
 - `manifest.json` lists all section and chapter tasks with absolute content/output paths.
 - `content/` holds raw text handed to subagents.
 - `sections/<chapter>.<section>.json` and `chapters/<chapter>.json` hold `{"summary": "..."}`.
-- `--apply-summaries` writes summaries back into `toc_parsed` and `toc_enriched`.
+- `--apply-summaries` writes summaries only into `toc_enriched`; `toc_parsed` stays the raw subagent output.

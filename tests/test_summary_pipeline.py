@@ -99,8 +99,8 @@ def prepareBook(data_root: Path) -> dict:
                 "name": "Chapter One",
                 "start": 11,
                 "sections": {
-                    "1": {"name": "Alpha", "start": 11},
-                    "2": {"name": "Beta", "start": 13},
+                    "1.1": {"name": "Alpha", "start": 11},
+                    "1.2": {"name": "Beta", "start": 13},
                 },
             }
         },
@@ -196,7 +196,7 @@ def testBuildChapterContentUsesLegacyTemplate(
 ) -> None:
     """The chapter input combines section summaries and chapter chunks."""
     manifest = prepareBook(data_root)
-    parsed = {
+    enriched = {
         "chapters": {
             "1": {
                 "sections": {
@@ -208,7 +208,7 @@ def testBuildChapterContentUsesLegacyTemplate(
     }
 
     content = summary_pipeline.buildChapterContent(
-        parsed,
+        enriched,
         summary_pipeline.SummaryTask.model_validate(
             manifest["chapter_tasks"][0]
         ),
@@ -224,9 +224,12 @@ def testBuildChapterContentUsesLegacyTemplate(
     )
 
 
-def testApplySummariesMergesAndFallsBack(data_root: Path) -> None:
-    """Valid outputs merge; empty content uses the deterministic fallback."""
+def testApplySummariesMergesIntoEnrichedOnly(data_root: Path) -> None:
+    """Summaries merge into normalized enriched sections; parsed stays raw."""
     manifest = prepareBook(data_root)
+    original_parsed = config.getParsedTocPath("book").read_text(
+        encoding="utf-8"
+    )
 
     writeSummary(manifest["section_tasks"][0]["output_path"], "Alpha summary")
     writeSummary(manifest["chapter_tasks"][0]["output_path"], "Chapter summary")
@@ -245,14 +248,16 @@ def testApplySummariesMergesAndFallsBack(data_root: Path) -> None:
         "applied_sections": 2,
         "applied_chapters": 1,
     }
-    assert parsed["thinking"] == "fixture"
-    assert parsed["chapters"]["1"]["sections"]["1"]["summary"] == "Alpha summary"
+    assert config.getParsedTocPath("book").read_text(
+        encoding="utf-8"
+    ) == original_parsed
+    assert "summary" not in parsed["chapters"]["1"]
+    assert "summary" not in parsed["chapters"]["1"]["sections"]["1.1"]
+    assert enriched["chapters"]["1"]["sections"]["1"]["summary"] == "Alpha summary"
     assert (
-        parsed["chapters"]["1"]["sections"]["2"]["summary"]
+        enriched["chapters"]["1"]["sections"]["2"]["summary"]
         == "No content available for Section 1.2"
     )
-    assert parsed["chapters"]["1"]["summary"] == "Chapter summary"
-    assert enriched["chapters"]["1"]["sections"]["1"]["summary"] == "Alpha summary"
     assert enriched["chapters"]["1"]["summary"] == "Chapter summary"
 
 
@@ -279,20 +284,44 @@ def testApplySummariesRejectsEmptyOutputs(data_root: Path) -> None:
 
 
 def testApplySummariesReusesExistingSummary(data_root: Path) -> None:
-    """A cached ToC summary is reused when the output file is absent."""
+    """A cached enriched summary is reused when the output file is absent."""
     manifest = prepareBook(data_root)
-    parsed = json.loads(
-        config.getParsedTocPath("book").read_text(encoding="utf-8")
+    enriched = json.loads(
+        config.getEnrichedTocPath("book").read_text(encoding="utf-8")
     )
-    parsed["chapters"]["1"]["sections"]["1"]["summary"] = "Cached summary"
-    config.getParsedTocPath("book").write_text(
-        json.dumps(parsed), encoding="utf-8"
+    enriched["chapters"]["1"]["sections"]["1"]["summary"] = "Cached summary"
+    config.getEnrichedTocPath("book").write_text(
+        json.dumps(enriched), encoding="utf-8"
     )
     writeSummary(manifest["chapter_tasks"][0]["output_path"], "Chapter summary")
 
     summary_pipeline.applySummaries("book")
 
-    enriched = json.loads(
+    updated = json.loads(
         config.getEnrichedTocPath("book").read_text(encoding="utf-8")
     )
-    assert enriched["chapters"]["1"]["sections"]["1"]["summary"] == "Cached summary"
+    assert updated["chapters"]["1"]["sections"]["1"]["summary"] == "Cached summary"
+
+
+def testApplySummariesRequiresEnrichedToc(data_root: Path) -> None:
+    """Applying summaries fails when the enriched ToC is missing."""
+    prepareBook(data_root)
+    config.getEnrichedTocPath("book").unlink()
+
+    with pytest.raises(FileNotFoundError) as error:
+        summary_pipeline.applySummaries("book")
+
+    assert "Enriched ToC" in str(error.value)
+
+
+def testApplySummariesDoesNotReadParsedToc(data_root: Path) -> None:
+    """The raw parsed ToC is not required once the enriched ToC exists."""
+    manifest = prepareBook(data_root)
+    config.getParsedTocPath("book").unlink()
+    writeSummary(manifest["section_tasks"][0]["output_path"], "Alpha summary")
+    writeSummary(manifest["chapter_tasks"][0]["output_path"], "Chapter summary")
+
+    status = summary_pipeline.applySummaries("book")
+
+    assert status["applied_sections"] == 2
+    assert not config.getParsedTocPath("book").exists()

@@ -9,7 +9,7 @@ from pydantic import ValidationError
 
 import config
 from logging_config import getLogger
-from schemas import SummaryManifest, SummaryOutput, SummaryTask
+from schemas import EnrichedToc, SummaryManifest, SummaryOutput, SummaryTask
 
 logger = getLogger(__name__)
 
@@ -238,14 +238,14 @@ def loadSummaryOutput(output_path: str, task_id: str) -> str:
 def findMissingSummaryTasks(
     tasks: list[SummaryTask],
     contents: dict[str, str],
-    parsed_toc: dict,
+    enriched_toc: dict,
 ) -> list[str]:
     """Collect task IDs whose summary is absent and cannot be reused.
 
     Args:
         tasks: Section or chapter tasks to check.
         contents: Task ID to content mapping.
-        parsed_toc: Parsed ToC that may already contain summaries.
+        enriched_toc: Enriched ToC that may already contain summaries.
 
     Returns:
         Missing or invalid task IDs.
@@ -265,23 +265,23 @@ def findMissingSummaryTasks(
                 missing_tasks.append(task.task_id)
             continue
 
-        if not getExistingSummary(parsed_toc, task):
+        if not getExistingSummary(enriched_toc, task):
             missing_tasks.append(task.task_id)
 
     return missing_tasks
 
 
-def getExistingSummary(parsed_toc: dict, task: SummaryTask) -> str:
-    """Read a previously applied summary from the parsed ToC.
+def getExistingSummary(enriched_toc: dict, task: SummaryTask) -> str:
+    """Read a previously applied summary from the enriched ToC.
 
     Args:
-        parsed_toc: Parsed ToC dictionary.
+        enriched_toc: Enriched ToC dictionary.
         task: Section or chapter task.
 
     Returns:
         The existing non-empty summary, or ``""``.
     """
-    chapter = parsed_toc.get("chapters", {}).get(task.chapter_id, {})
+    chapter = enriched_toc.get("chapters", {}).get(task.chapter_id, {})
 
     if task.kind == "section":
         section = chapter.get("sections", {}).get(task.section_id or "", {})
@@ -293,7 +293,7 @@ def getExistingSummary(parsed_toc: dict, task: SummaryTask) -> str:
 def resolveTaskSummary(
     task: SummaryTask,
     content: str,
-    parsed_toc: dict,
+    enriched_toc: dict,
     fallback: str,
 ) -> str:
     """Resolve one task's summary from its output, cache, or fallback.
@@ -301,7 +301,7 @@ def resolveTaskSummary(
     Args:
         task: Section or chapter task.
         content: Task content already read from disk.
-        parsed_toc: Parsed ToC dictionary.
+        enriched_toc: Enriched ToC dictionary.
         fallback: Deterministic summary used when content is empty.
 
     Returns:
@@ -313,7 +313,7 @@ def resolveTaskSummary(
     if Path(task.output_path).exists():
         return loadSummaryOutput(task.output_path, task.task_id)
 
-    existing_summary = getExistingSummary(parsed_toc, task)
+    existing_summary = getExistingSummary(enriched_toc, task)
 
     if existing_summary:
         logger.info("Reusing existing summary for %s", task.task_id)
@@ -323,13 +323,13 @@ def resolveTaskSummary(
 
 
 def mergeSectionSummaries(
-    parsed_toc: dict,
+    enriched_toc: dict,
     manifest: SummaryManifest,
 ) -> int:
-    """Merge delegated section summaries into the parsed ToC in memory.
+    """Merge delegated section summaries into the enriched ToC in memory.
 
     Args:
-        parsed_toc: Parsed ToC dictionary, mutated in place.
+        enriched_toc: Enriched ToC dictionary, mutated in place.
         manifest: Validated summary manifest.
 
     Returns:
@@ -340,13 +340,9 @@ def mergeSectionSummaries(
     for task in manifest.section_tasks:
         content = readTextFile(task.content_path or "")
         fallback = f"No content available for Section {task.chapter_id}.{task.section_id}"
-        summary = resolveTaskSummary(task, content, parsed_toc, fallback)
-        chapter = parsed_toc.setdefault("chapters", {}).setdefault(
-            task.chapter_id, {"sections": {}}
-        )
-        section = chapter.setdefault("sections", {}).setdefault(
-            task.section_id or "", {}
-        )
+        summary = resolveTaskSummary(task, content, enriched_toc, fallback)
+        chapter = enriched_toc["chapters"][task.chapter_id]
+        section = chapter["sections"][task.section_id or ""]
         section["summary"] = summary
         applied_count += 1
 
@@ -354,19 +350,19 @@ def mergeSectionSummaries(
 
 
 def buildChapterContent(
-    parsed_toc: dict,
+    enriched_toc: dict,
     task: SummaryTask,
 ) -> str:
     """Assemble the legacy chapter input from section summaries and chunks.
 
     Args:
-        parsed_toc: Parsed ToC with applied section summaries.
+        enriched_toc: Enriched ToC with applied section summaries.
         task: Chapter task.
 
     Returns:
         The ``all_content`` block passed to the chapter summarizer.
     """
-    chapter = parsed_toc.get("chapters", {}).get(task.chapter_id, {})
+    chapter = enriched_toc.get("chapters", {}).get(task.chapter_id, {})
     section_summaries: list[str] = []
 
     for section_id, section in chapter.get("sections", {}).items():
@@ -392,13 +388,13 @@ def buildChapterContent(
 
 
 def mergeChapterSummaries(
-    parsed_toc: dict,
+    enriched_toc: dict,
     manifest: SummaryManifest,
 ) -> int:
-    """Merge delegated chapter summaries into the parsed ToC in memory.
+    """Merge delegated chapter summaries into the enriched ToC in memory.
 
     Args:
-        parsed_toc: Parsed ToC dictionary, mutated in place.
+        enriched_toc: Enriched ToC dictionary, mutated in place.
         manifest: Validated summary manifest.
 
     Returns:
@@ -407,49 +403,27 @@ def mergeChapterSummaries(
     applied_count = 0
 
     for task in manifest.chapter_tasks:
-        all_content = buildChapterContent(parsed_toc, task)
+        all_content = buildChapterContent(enriched_toc, task)
         fallback = f"No content available for {task.name}"
-        summary = resolveTaskSummary(task, all_content, parsed_toc, fallback)
-        chapter = parsed_toc.setdefault("chapters", {}).setdefault(
-            task.chapter_id, {"sections": {}}
-        )
-        chapter["summary"] = summary
+        summary = resolveTaskSummary(task, all_content, enriched_toc, fallback)
+        enriched_toc["chapters"][task.chapter_id]["summary"] = summary
         applied_count += 1
 
     return applied_count
 
 
-def writeParsedToc(pdf_name: str, parsed_toc: dict) -> Path:
-    """Write the parsed ToC with applied summaries in place.
+def loadEnrichedToc(pdf_name: str) -> dict:
+    """Load and validate the enriched ToC.
 
     Args:
         pdf_name: PDF file name without its extension.
-        parsed_toc: Parsed ToC dictionary.
 
     Returns:
-        The written path.
-    """
-    parsed_path = config.getParsedTocPath(pdf_name)
-    writeTextFile(
-        parsed_path,
-        json.dumps(parsed_toc, ensure_ascii=False, indent=2) + "\n",
-    )
-
-    return parsed_path
-
-
-def writeEnrichedSummaries(pdf_name: str, parsed_toc: dict) -> Path:
-    """Copy applied summaries into the enriched ToC.
-
-    Args:
-        pdf_name: PDF file name without its extension.
-        parsed_toc: Parsed ToC with summaries.
-
-    Returns:
-        The enriched ToC path.
+        The validated enriched ToC dictionary.
 
     Raises:
-        FileNotFoundError: If ``toc_enriched/<pdf_name>.json`` is missing.
+        FileNotFoundError: If the enriched ToC is missing.
+        pydantic.ValidationError: If the file does not match ``EnrichedToc``.
     """
     enriched_path = config.getEnrichedTocPath(pdf_name)
 
@@ -457,35 +431,41 @@ def writeEnrichedSummaries(pdf_name: str, parsed_toc: dict) -> Path:
         raise FileNotFoundError(f"Enriched ToC not found: {enriched_path}")
 
     enriched_toc = json.loads(enriched_path.read_text(encoding="utf-8"))
+    EnrichedToc.model_validate(enriched_toc)
 
-    for chapter_id, parsed_chapter in parsed_toc.get("chapters", {}).items():
-        enriched_chapter = enriched_toc.setdefault("chapters", {}).setdefault(
-            chapter_id, {"sections": {}}
-        )
+    return enriched_toc
 
-        if parsed_chapter.get("summary"):
-            enriched_chapter["summary"] = parsed_chapter["summary"]
 
-        for section_id, parsed_section in parsed_chapter.get(
-            "sections", {}
-        ).items():
-            enriched_section = enriched_chapter.setdefault(
-                "sections", {}
-            ).setdefault(section_id, {})
+def writeEnrichedToc(pdf_name: str, enriched_toc: dict) -> Path:
+    """Validate and write the enriched ToC with applied summaries.
 
-            if parsed_section.get("summary"):
-                enriched_section["summary"] = parsed_section["summary"]
+    Args:
+        pdf_name: PDF file name without its extension.
+        enriched_toc: Enriched ToC dictionary with summaries.
 
+    Returns:
+        The written path.
+
+    Raises:
+        pydantic.ValidationError: If ``enriched_toc`` is malformed.
+    """
+    validated = EnrichedToc.model_validate(enriched_toc)
+    enriched_path = config.getEnrichedTocPath(pdf_name)
     writeTextFile(
         enriched_path,
-        json.dumps(enriched_toc, ensure_ascii=False, indent=2) + "\n",
+        json.dumps(
+            validated.model_dump(mode="json", exclude_none=True),
+            ensure_ascii=False,
+            indent=2,
+        )
+        + "\n",
     )
 
     return enriched_path
 
 
 def applySummaries(pdf_name: str) -> dict:
-    """Validate delegated outputs and merge them into both ToC files.
+    """Validate delegated outputs and merge them into the enriched ToC.
 
     Args:
         pdf_name: PDF file name without its extension.
@@ -494,22 +474,17 @@ def applySummaries(pdf_name: str) -> dict:
         A JSON-ready status dictionary with applied task counts.
 
     Raises:
-        FileNotFoundError: If the manifest or parsed ToC is missing.
+        FileNotFoundError: If the manifest or enriched ToC is missing.
         click.ClickException: If any required summary output is missing.
     """
-    parsed_path = config.getParsedTocPath(pdf_name)
-
-    if not parsed_path.exists():
-        raise FileNotFoundError(f"Parsed ToC not found: {parsed_path}")
-
     manifest = loadManifest(pdf_name)
-    parsed_toc = json.loads(parsed_path.read_text(encoding="utf-8"))
+    enriched_toc = loadEnrichedToc(pdf_name)
     section_contents = {
         task.task_id: readTextFile(task.content_path or "")
         for task in manifest.section_tasks
     }
     missing_sections = findMissingSummaryTasks(
-        manifest.section_tasks, section_contents, parsed_toc
+        manifest.section_tasks, section_contents, enriched_toc
     )
 
     if missing_sections:
@@ -517,13 +492,13 @@ def applySummaries(pdf_name: str) -> dict:
             "Missing section summary outputs: " + ", ".join(missing_sections)
         )
 
-    applied_sections = mergeSectionSummaries(parsed_toc, manifest)
+    applied_sections = mergeSectionSummaries(enriched_toc, manifest)
     chapter_contents = {
-        task.task_id: buildChapterContent(parsed_toc, task)
+        task.task_id: buildChapterContent(enriched_toc, task)
         for task in manifest.chapter_tasks
     }
     missing_chapters = findMissingSummaryTasks(
-        manifest.chapter_tasks, chapter_contents, parsed_toc
+        manifest.chapter_tasks, chapter_contents, enriched_toc
     )
 
     if missing_chapters:
@@ -531,10 +506,9 @@ def applySummaries(pdf_name: str) -> dict:
             "Missing chapter summary outputs: " + ", ".join(missing_chapters)
         )
 
-    applied_chapters = mergeChapterSummaries(parsed_toc, manifest)
+    applied_chapters = mergeChapterSummaries(enriched_toc, manifest)
 
-    writeParsedToc(pdf_name, parsed_toc)
-    writeEnrichedSummaries(pdf_name, parsed_toc)
+    writeEnrichedToc(pdf_name, enriched_toc)
 
     return {
         "pdf_name": pdf_name,

@@ -92,7 +92,7 @@ Run:
 terminal(command="python \"$SKILL_DIR/scripts/db_populate.py\" <pdf_name> --apply-summaries")
 ```
 
-It validates outputs, merges section summaries into `toc_parsed/<pdf_name>.json`, merges chapter summaries, and copies them to `toc_enriched/<pdf_name>.json`. It prints:
+It validates outputs, merges section and chapter summaries into `toc_enriched/<pdf_name>.json`, and rewrites that file. `toc_parsed/<pdf_name>.json` is left untouched as the raw ToC subagent output. It prints:
 
 ```json
 {"pdf_name": "book", "applied_sections": 24, "applied_chapters": 8}
@@ -104,5 +104,5 @@ If any required output is missing, it fails with a `click.ClickException` naming
 
 - A section with no chunks gets `No content available for Section <chapter>.<section>`.
 - A chapter with no content gets `No content available for <name>`.
-- `--apply-summaries` reuses an existing non-empty summary in `toc_parsed` when its output file is absent, so reruns do not require re-delegation.
+- `--apply-summaries` reuses an existing non-empty summary in `toc_enriched` when its output file is absent, so reruns do not require re-delegation.
 - Content paths are derived from the enriched ToC at `db_populate.py` time. If the ToC changed, rerun the default command to regenerate the manifest.

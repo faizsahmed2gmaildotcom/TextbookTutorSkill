@@ -49,7 +49,7 @@ Run from the directory that should hold generated data. The data root defaults t
 | 2. Parse ToC | delegate subagent, write JSON | `toc_parsed/<pdf>.json` |
 | 3. Postprocess | `python "$SKILL_DIR/scripts/postprocess_toc.py" <pdf name>` | `toc_enriched/<pdf>.json` |
 | 4a. Index | `python "$SKILL_DIR/scripts/db_populate.py" <pdf name> [--force]` | `lancedb_data/`, summary manifest |
-| 4b. Apply | `python "$SKILL_DIR/scripts/db_populate.py" <pdf name> --apply-summaries` | summaries in both ToC files |
+| 4b. Apply | `python "$SKILL_DIR/scripts/db_populate.py" <pdf name> --apply-summaries` | summaries in `toc_enriched` |
 | 5. Query | `python "$SKILL_DIR/scripts/db_skills.py" <pdf name> --chapsum` | citations and text |
 
 `<pdf name>` is the PDF file name without `.pdf`.
@@ -68,7 +68,7 @@ Run from the directory that should hold generated data. The data root defaults t
    - Delegate chapter tasks next; each subagent reads `chapter_content_path` plus every **existing** path in `section_summary_paths`, then writes its `output_path`.
    - Run `db_populate.py <pdf name> --apply-summaries`.
 
-   Completion: the apply command prints `applied_sections` and `applied_chapters` equal to the manifest task counts, and `toc_enriched` has a non-empty summary for every chapter and section with content.
+   Completion: the apply command prints `applied_sections` and `applied_chapters` equal to the manifest task counts, and `toc_enriched` has a non-empty summary for every chapter and section with content. `toc_parsed` stays exactly as the ToC subagent wrote it.
 
 5. **Answer the question.** Read `references/query-workflow.md` and follow the three-step retrieval loop:
    - `db_skills.py <pdf name> --chapsum` — pick at most 3 relevant chapters.
@@ -83,6 +83,7 @@ Run from the directory that should hold generated data. The data root defaults t
 - **Page-label offsets**: PDFs with roman front matter map printed labels to physical pages. Keep `chunks/<pdf>.meta.json`; postprocessing needs its `page_labels`, `page_count`, and `toc_offset`.
 - **Legacy page ranges**: the last chapter ends at `page_count - 1`, and a section's `end` equals the next section's `start`. These are intentional parity choices.
 - **Table reuse**: `db_populate.py` reuses an existing LanceDB table unless `--force` is given. A stale table keeps old metadata; rebuild after changing chunks or the ToC.
+- **Raw parsed ToC**: `toc_parsed` is the unmodified ToC subagent output and is never rewritten. Summaries go only into `toc_enriched`, which has normalized section IDs and computed `end` pages.
 - **Summary order**: chapter tasks depend on section summaries. Applying before every section output exists fails with a list of missing tasks.
 - **No-content tasks**: sections without chunks get `No content available for Section <c>.<s>`; empty chapters get `No content available for <name>`. Their output files are optional.
 - **Picture payloads**: `--picid` returns base64 in the legacy shape. Prefer `vision_analyze` on the picture file for normal question answering.
@@ -93,7 +94,7 @@ Run from the directory that should hold generated data. The data root defaults t
 ## Verification
 
 - `chunks/<pdf>.meta.json` exists and its `page_labels` length equals `page_count`.
-- `toc_parsed/<pdf>.json` validates against `TOCStructure`; `toc_enriched/<pdf>.json` validates against `EnrichedToc`.
+- `toc_parsed/<pdf>.json` validates against `TOCStructure` and is unchanged from the subagent output; `toc_enriched/<pdf>.json` validates against `EnrichedToc`.
 - Every enriched chapter/section has `summary` (fallback text is acceptable only for empty content).
 - `lancedb_data/<table_name>.lance/` exists, and `db_populate.py` reported a table plus FTS index without error. `<table_name>` is the PDF stem with characters outside `[A-Za-z0-9_.-]` replaced by `_`.
 - Spot-check `--chapsum`, `--secsum 1`, `--secraw 1.1`, and `--picid 1`.
