@@ -191,6 +191,8 @@ def enrichTocStructure(
             "sections": enriched_sections,
         }
 
+    print(json.dumps(enriched_chapters))
+
     return {"chapters": enriched_chapters}
 
 
