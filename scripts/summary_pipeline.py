@@ -345,7 +345,7 @@ def mergeSectionSummaries(
             task.chapter_id, {"sections": {}}
         )
         section = chapter.setdefault("sections", {}).setdefault(
-            task.section_id or "", {}
+            f"{task.chapter_id}.{task.section_id}" or "", {}
         )
         section["summary"] = summary
         applied_count += 1
