@@ -369,8 +369,8 @@ def buildChapterContent(
     chapter = parsed_toc.get("chapters", {}).get(task.chapter_id, {})
     section_summaries: list[str] = []
 
+    print(chapter)
     for section_id, section in chapter.get("sections", {}).items():
-        print(section)
         section_summaries.append(
             f'Section {section_id} ({section["name"]}): '
             f'{section.get("summary", "")}'
@@ -499,8 +499,6 @@ def applySummaries(pdf_name: str) -> dict:
         click.ClickException: If any required summary output is missing.
     """
     parsed_path = config.getParsedTocPath(pdf_name)
-    input(parsed_path)
-
 
     if not parsed_path.exists():
         raise FileNotFoundError(f"Parsed ToC not found: {parsed_path}")
