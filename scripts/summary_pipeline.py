@@ -369,7 +369,6 @@ def buildChapterContent(
     chapter = parsed_toc.get("chapters", {}).get(task.chapter_id, {})
     section_summaries: list[str] = []
 
-    print(chapter)
     for section_id, section in chapter.get("sections", {}).items():
         section_summaries.append(
             f'Section {section_id} ({section["name"]}): '
@@ -505,6 +504,8 @@ def applySummaries(pdf_name: str) -> dict:
 
     manifest = loadManifest(pdf_name)
     parsed_toc = json.loads(parsed_path.read_text(encoding="utf-8"))
+    print(parsed_toc)
+
     section_contents = {
         task.task_id: readTextFile(task.content_path or "")
         for task in manifest.section_tasks
