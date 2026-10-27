@@ -46,7 +46,6 @@ def postprocessToc(pdf_name: str) -> dict:
         metadata.page_count,
         metadata.toc_offset,
     )
-    print(enriched_toc)
     toc_pipeline.writeEnrichedToc(
         pdf_name,
         enriched_toc,

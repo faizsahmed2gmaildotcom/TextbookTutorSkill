@@ -49,7 +49,7 @@ Run from the directory that should hold generated data. The data root defaults t
 | 2. Parse ToC | delegate subagent, write JSON | `toc_parsed/<pdf>.json` |
 | 3. Postprocess | `python "$SKILL_DIR/scripts/postprocess_toc.py" <pdf name>` | `toc_enriched/<pdf>.json` |
 | 4a. Index | `python "$SKILL_DIR/scripts/db_populate.py" <pdf name> [--force]` | `lancedb_data/`, summary manifest |
-| 4b. Apply | `python "$SKILL_DIR/scripts/db_populate.py" <pdf name> --apply-summaries` | summaries in both ToC files |
+| 4b. Apply | `python "$SKILL_DIR/scripts/db_populate.py" <pdf name> --apply-summaries` | summaries in enriched ToC file |
 | 5. Query | `python "$SKILL_DIR/scripts/db_skills.py" <pdf name> --chapsum` | citations and text |
 
 `<pdf name>` is the PDF file name without `.pdf`.
