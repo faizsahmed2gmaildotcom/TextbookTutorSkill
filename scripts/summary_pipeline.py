@@ -519,7 +519,6 @@ def applySummaries(pdf_name: str) -> dict:
         )
 
     applied_sections = mergeSectionSummaries(parsed_toc, manifest)
-    print(json.dumps(parsed_toc, indent=2))
     chapter_contents = {
         task.task_id: buildChapterContent(parsed_toc, task)
         for task in manifest.chapter_tasks
