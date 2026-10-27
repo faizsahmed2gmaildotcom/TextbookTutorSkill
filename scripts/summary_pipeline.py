@@ -499,13 +499,13 @@ def applySummaries(pdf_name: str) -> dict:
         click.ClickException: If any required summary output is missing.
     """
     parsed_path = config.getParsedTocPath(pdf_name)
+    input(parsed_path)
 
     if not parsed_path.exists():
         raise FileNotFoundError(f"Parsed ToC not found: {parsed_path}")
 
     manifest = loadManifest(pdf_name)
     parsed_toc = json.loads(parsed_path.read_text(encoding="utf-8"))
-    print(parsed_path)
     section_contents = {
         task.task_id: readTextFile(task.content_path or "")
         for task in manifest.section_tasks
