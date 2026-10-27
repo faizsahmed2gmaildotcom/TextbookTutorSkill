@@ -1,0 +1,9 @@
+click>=8.1
+docling>=2.100
+docling-core>=2.30
+docling-hierarchical-pdf>=0.1.9
+lancedb>=0.20
+pydantic>=2.7
+pymupdf>=1.24
+pypdf>=5.0
+sentence-transformers>=3.0

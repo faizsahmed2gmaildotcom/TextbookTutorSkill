@@ -1,0 +1,17 @@
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.venv/
+.idea/
+.lancedb/
+
+chunks/
+toc_raw/
+toc_parsed/
+toc_enriched/
+pictures/
+lancedb_data/
+summaries/
+temp/
+temp.json
+temp.txt

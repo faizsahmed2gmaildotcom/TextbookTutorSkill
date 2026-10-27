@@ -1,0 +1,364 @@
+{
+  "chapters": {
+    "1": {
+      "name": "Introduction",
+      "start": 11,
+      "end": 17,
+      "sections": {
+        "1": {
+          "name": "What is Competitive Programming?",
+          "start": 11,
+          "end": 13
+        },
+        "2": {
+          "name": "About This Book",
+          "start": 13,
+          "end": 15
+        },
+        "3": {
+          "name": "CSES Problem Set",
+          "start": 15,
+          "end": 17
+        },
+        "4": {
+          "name": "Other Resources",
+          "start": 17,
+          "end": 17
+        }
+      }
+    },
+    "2": {
+      "name": "Programming Techniques",
+      "start": 18,
+      "end": 34,
+      "sections": {
+        "1": {
+          "name": "Language Features",
+          "start": 18,
+          "end": 24
+        },
+        "2": {
+          "name": "Recursive Algorithms",
+          "start": 24,
+          "end": 29
+        },
+        "3": {
+          "name": "Bit Manipulation",
+          "start": 29,
+          "end": 34
+        }
+      }
+    },
+    "3": {
+      "name": "Efficiency",
+      "start": 35,
+      "end": 44,
+      "sections": {
+        "1": {
+          "name": "Time Complexity",
+          "start": 35,
+          "end": 40
+        },
+        "2": {
+          "name": "Examples",
+          "start": 40,
+          "end": 44
+        }
+      }
+    },
+    "4": {
+      "name": "Sorting and Searching",
+      "start": 45,
+      "end": 57,
+      "sections": {
+        "1": {
+          "name": "Sorting Algorithms",
+          "start": 45,
+          "end": 51
+        },
+        "2": {
+          "name": "Solving Problems by Sorting",
+          "start": 51,
+          "end": 54
+        },
+        "3": {
+          "name": "Binary Search",
+          "start": 54,
+          "end": 57
+        }
+      }
+    },
+    "5": {
+      "name": "Data Structures",
+      "start": 58,
+      "end": 69,
+      "sections": {
+        "1": {
+          "name": "Dynamic Arrays",
+          "start": 58,
+          "end": 62
+        },
+        "2": {
+          "name": "Set Structures",
+          "start": 62,
+          "end": 67
+        },
+        "3": {
+          "name": "Experiments",
+          "start": 67,
+          "end": 69
+        }
+      }
+    },
+    "6": {
+      "name": "Dynamic Programming",
+      "start": 70,
+      "end": 82,
+      "sections": {
+        "1": {
+          "name": "Basic Concepts",
+          "start": 70,
+          "end": 75
+        },
+        "2": {
+          "name": "Further Examples",
+          "start": 75,
+          "end": 82
+        }
+      }
+    },
+    "7": {
+      "name": "Graph Algorithms",
+      "start": 83,
+      "end": 112,
+      "sections": {
+        "1": {
+          "name": "Basics of Graphs",
+          "start": 84,
+          "end": 89
+        },
+        "2": {
+          "name": "Graph Traversal",
+          "start": 89,
+          "end": 93
+        },
+        "3": {
+          "name": "Shortest Paths",
+          "start": 93,
+          "end": 100
+        },
+        "4": {
+          "name": "Directed Acyclic Graphs",
+          "start": 100,
+          "end": 103
+        },
+        "5": {
+          "name": "Successor Graphs",
+          "start": 103,
+          "end": 106
+        },
+        "6": {
+          "name": "Minimum Spanning Trees",
+          "start": 106,
+          "end": 112
+        }
+      }
+    },
+    "8": {
+      "name": "Algorithm Design Topics",
+      "start": 113,
+      "end": 123,
+      "sections": {
+        "1": {
+          "name": "Bit-Parallel Algorithms",
+          "start": 113,
+          "end": 117
+        },
+        "2": {
+          "name": "Amortized Analysis",
+          "start": 117,
+          "end": 121
+        },
+        "3": {
+          "name": "Finding Minimum Values",
+          "start": 121,
+          "end": 123
+        }
+      }
+    },
+    "9": {
+      "name": "Range Queries",
+      "start": 124,
+      "end": 134,
+      "sections": {
+        "1": {
+          "name": "Queries on Static Arrays",
+          "start": 124,
+          "end": 127
+        },
+        "2": {
+          "name": "Tree Structures",
+          "start": 127,
+          "end": 134
+        }
+      }
+    },
+    "10": {
+      "name": "Tree Algorithms",
+      "start": 135,
+      "end": 150,
+      "sections": {
+        "1": {
+          "name": "Basic Techniques",
+          "start": 135,
+          "end": 141
+        },
+        "2": {
+          "name": "Tree Queries",
+          "start": 141,
+          "end": 148
+        },
+        "3": {
+          "name": "Advanced Techniques",
+          "start": 148,
+          "end": 150
+        }
+      }
+    },
+    "11": {
+      "name": "Mathematics",
+      "start": 151,
+      "end": 191,
+      "sections": {
+        "1": {
+          "name": "Number Theory",
+          "start": 151,
+          "end": 160
+        },
+        "2": {
+          "name": "Combinatorics",
+          "start": 160,
+          "end": 168
+        },
+        "3": {
+          "name": "Matrices",
+          "start": 168,
+          "end": 177
+        },
+        "4": {
+          "name": "Probability",
+          "start": 177,
+          "end": 185
+        },
+        "5": {
+          "name": "Game Theory",
+          "start": 185,
+          "end": 191
+        }
+      }
+    },
+    "12": {
+      "name": "Advanced Graph Algorithms",
+      "start": 192,
+      "end": 212,
+      "sections": {
+        "1": {
+          "name": "Strong Connectivity",
+          "start": 192,
+          "end": 196
+        },
+        "2": {
+          "name": "Complete Paths",
+          "start": 196,
+          "end": 201
+        },
+        "3": {
+          "name": "Maximum Flows",
+          "start": 201,
+          "end": 210
+        },
+        "4": {
+          "name": "Depth-First Search Trees",
+          "start": 210,
+          "end": 212
+        }
+      }
+    },
+    "13": {
+      "name": "Geometry",
+      "start": 213,
+      "end": 226,
+      "sections": {
+        "1": {
+          "name": "Geometric Techniques",
+          "start": 213,
+          "end": 222
+        },
+        "2": {
+          "name": "Sweep Line Algorithms",
+          "start": 222,
+          "end": 226
+        }
+      }
+    },
+    "14": {
+      "name": "String Algorithms",
+      "start": 227,
+      "end": 239,
+      "sections": {
+        "1": {
+          "name": "Basic Topics",
+          "start": 227,
+          "end": 230
+        },
+        "2": {
+          "name": "String Hashing",
+          "start": 230,
+          "end": 233
+        },
+        "3": {
+          "name": "Z-Algorithm",
+          "start": 233,
+          "end": 236
+        },
+        "4": {
+          "name": "Suffix Arrays",
+          "start": 236,
+          "end": 239
+        }
+      }
+    },
+    "15": {
+      "name": "Additional Topics",
+      "start": 240,
+      "end": 282,
+      "sections": {
+        "1": {
+          "name": "Square Root Techniques",
+          "start": 240,
+          "end": 246
+        },
+        "2": {
+          "name": "Segment Trees Revisited",
+          "start": 246,
+          "end": 254
+        },
+        "3": {
+          "name": "Treaps",
+          "start": 254,
+          "end": 259
+        },
+        "4": {
+          "name": "Dynamic Programming Optimization",
+          "start": 259,
+          "end": 263
+        },
+        "5": {
+          "name": "Miscellaneous",
+          "start": 263,
+          "end": 282
+        }
+      }
+    }
+  }
+}

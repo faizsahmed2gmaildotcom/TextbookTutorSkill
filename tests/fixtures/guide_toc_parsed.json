@@ -1,0 +1,299 @@
+{
+  "chapters": {
+    "1": {
+      "name": "Introduction",
+      "start": 1,
+      "sections": {
+        "1": {
+          "name": "What is Competitive Programming?",
+          "start": 1
+        },
+        "2": {
+          "name": "About This Book",
+          "start": 3
+        },
+        "3": {
+          "name": "CSES Problem Set",
+          "start": 5
+        },
+        "4": {
+          "name": "Other Resources",
+          "start": 7
+        }
+      }
+    },
+    "2": {
+      "name": "Programming Techniques",
+      "start": 9,
+      "sections": {
+        "1": {
+          "name": "Language Features",
+          "start": 9
+        },
+        "2": {
+          "name": "Recursive Algorithms",
+          "start": 15
+        },
+        "3": {
+          "name": "Bit Manipulation",
+          "start": 20
+        }
+      }
+    },
+    "3": {
+      "name": "Efficiency",
+      "start": 27,
+      "sections": {
+        "1": {
+          "name": "Time Complexity",
+          "start": 27
+        },
+        "2": {
+          "name": "Examples",
+          "start": 32
+        }
+      }
+    },
+    "4": {
+      "name": "Sorting and Searching",
+      "start": 37,
+      "sections": {
+        "1": {
+          "name": "Sorting Algorithms",
+          "start": 37
+        },
+        "2": {
+          "name": "Solving Problems by Sorting",
+          "start": 43
+        },
+        "3": {
+          "name": "Binary Search",
+          "start": 46
+        }
+      }
+    },
+    "5": {
+      "name": "Data Structures",
+      "start": 51,
+      "sections": {
+        "1": {
+          "name": "Dynamic Arrays",
+          "start": 51
+        },
+        "2": {
+          "name": "Set Structures",
+          "start": 55
+        },
+        "3": {
+          "name": "Experiments",
+          "start": 60
+        }
+      }
+    },
+    "6": {
+      "name": "Dynamic Programming",
+      "start": 63,
+      "sections": {
+        "1": {
+          "name": "Basic Concepts",
+          "start": 63
+        },
+        "2": {
+          "name": "Further Examples",
+          "start": 68
+        }
+      }
+    },
+    "7": {
+      "name": "Graph Algorithms",
+      "start": 77,
+      "sections": {
+        "1": {
+          "name": "Basics of Graphs",
+          "start": 78
+        },
+        "2": {
+          "name": "Graph Traversal",
+          "start": 83
+        },
+        "3": {
+          "name": "Shortest Paths",
+          "start": 87
+        },
+        "4": {
+          "name": "Directed Acyclic Graphs",
+          "start": 94
+        },
+        "5": {
+          "name": "Successor Graphs",
+          "start": 97
+        },
+        "6": {
+          "name": "Minimum Spanning Trees",
+          "start": 100
+        }
+      }
+    },
+    "8": {
+      "name": "Algorithm Design Topics",
+      "start": 107,
+      "sections": {
+        "1": {
+          "name": "Bit-Parallel Algorithms",
+          "start": 107
+        },
+        "2": {
+          "name": "Amortized Analysis",
+          "start": 111
+        },
+        "3": {
+          "name": "Finding Minimum Values",
+          "start": 115
+        }
+      }
+    },
+    "9": {
+      "name": "Range Queries",
+      "start": 119,
+      "sections": {
+        "1": {
+          "name": "Queries on Static Arrays",
+          "start": 119
+        },
+        "2": {
+          "name": "Tree Structures",
+          "start": 122
+        }
+      }
+    },
+    "10": {
+      "name": "Tree Algorithms",
+      "start": 131,
+      "sections": {
+        "1": {
+          "name": "Basic Techniques",
+          "start": 131
+        },
+        "2": {
+          "name": "Tree Queries",
+          "start": 137
+        },
+        "3": {
+          "name": "Advanced Techniques",
+          "start": 144
+        }
+      }
+    },
+    "11": {
+      "name": "Mathematics",
+      "start": 147,
+      "sections": {
+        "1": {
+          "name": "Number Theory",
+          "start": 147
+        },
+        "2": {
+          "name": "Combinatorics",
+          "start": 156
+        },
+        "3": {
+          "name": "Matrices",
+          "start": 164
+        },
+        "4": {
+          "name": "Probability",
+          "start": 173
+        },
+        "5": {
+          "name": "Game Theory",
+          "start": 181
+        }
+      }
+    },
+    "12": {
+      "name": "Advanced Graph Algorithms",
+      "start": 189,
+      "sections": {
+        "1": {
+          "name": "Strong Connectivity",
+          "start": 189
+        },
+        "2": {
+          "name": "Complete Paths",
+          "start": 193
+        },
+        "3": {
+          "name": "Maximum Flows",
+          "start": 198
+        },
+        "4": {
+          "name": "Depth-First Search Trees",
+          "start": 207
+        }
+      }
+    },
+    "13": {
+      "name": "Geometry",
+      "start": 211,
+      "sections": {
+        "1": {
+          "name": "Geometric Techniques",
+          "start": 211
+        },
+        "2": {
+          "name": "Sweep Line Algorithms",
+          "start": 220
+        }
+      }
+    },
+    "14": {
+      "name": "String Algorithms",
+      "start": 225,
+      "sections": {
+        "1": {
+          "name": "Basic Topics",
+          "start": 225
+        },
+        "2": {
+          "name": "String Hashing",
+          "start": 228
+        },
+        "3": {
+          "name": "Z-Algorithm",
+          "start": 231
+        },
+        "4": {
+          "name": "Suffix Arrays",
+          "start": 234
+        }
+      }
+    },
+    "15": {
+      "name": "Additional Topics",
+      "start": 239,
+      "sections": {
+        "1": {
+          "name": "Square Root Techniques",
+          "start": 239
+        },
+        "2": {
+          "name": "Segment Trees Revisited",
+          "start": 245
+        },
+        "3": {
+          "name": "Treaps",
+          "start": 253
+        },
+        "4": {
+          "name": "Dynamic Programming Optimization",
+          "start": 258
+        },
+        "5": {
+          "name": "Miscellaneous",
+          "start": 262
+        }
+      }
+    }
+  },
+  "thinking": "Fixture reconstructed from the legacy chapters_sections.json."
+}
