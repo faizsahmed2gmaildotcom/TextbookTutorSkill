@@ -370,7 +370,6 @@ def buildChapterContent(
     section_summaries: list[str] = []
 
     for section_id, section in chapter.get("sections", {}).items():
-        print(section)
         section_summaries.append(
             f'Section {section_id} ({section["name"]}): '
             f'{section.get("summary", "")}'
