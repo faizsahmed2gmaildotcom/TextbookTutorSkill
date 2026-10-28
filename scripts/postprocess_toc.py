@@ -5,6 +5,7 @@ import json
 import click
 
 import config
+import pdf_lock
 import toc_pipeline
 from logging_config import setupLogging
 from schemas import PdfMetadata
@@ -20,9 +21,12 @@ def postprocessToc(pdf_name: str) -> dict:
         The enriched ToC dictionary that was written.
 
     Raises:
+        RuntimeError: If summary generation currently owns this PDF's lock.
         FileNotFoundError: If the raw ToC, parsed ToC, or metadata is missing.
         pydantic.ValidationError: If the parsed ToC is malformed.
     """
+    pdf_lock.assertNoActiveLock(pdf_name)
+
     raw_toc_path = config.getRawTocPath(pdf_name)
     parsed_toc_path = config.getParsedTocPath(pdf_name)
     metadata_path = config.getMetadataPath(pdf_name)

@@ -1,6 +1,6 @@
-"""Pydantic models for ToC parsing, enrichment, metadata, and summaries."""
+"""Pydantic models for ToC parsing, enrichment, and metadata."""
 
-from pydantic import BaseModel, Field
+from pydantic import BaseModel
 
 
 class TocSection(BaseModel):
@@ -60,38 +60,3 @@ class PdfMetadata(BaseModel):
     toc_pages: list[int]
     toc_offset: int
     pictures_dir: str
-
-
-class SummaryOutput(BaseModel):
-    """The deterministic output schema for one delegated summary task."""
-
-    summary: str
-
-
-class SummaryTask(BaseModel):
-    """One unit of work delegated to a subagent.
-
-    Section tasks populate ``content_path``. Chapter tasks populate
-    ``section_summary_paths``, ``chapter_content_path``, and ``depends_on``.
-    """
-
-    task_id: str
-    kind: str
-    chapter_id: str
-    section_id: str | None = None
-    name: str
-    system_prompt: str
-    section_summary_paths: list[str] | None = None
-    chapter_content_path: str | None = None
-    content_path: str | None = None
-    output_path: str
-    depends_on: list[str] | None = None
-    output_schema: dict = Field(default_factory=dict)
-
-
-class SummaryManifest(BaseModel):
-    """The manifest consumed by the calling agent and ``--apply-summaries``."""
-
-    pdf_name: str
-    section_tasks: list[SummaryTask]
-    chapter_tasks: list[SummaryTask]

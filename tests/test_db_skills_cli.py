@@ -10,6 +10,7 @@ from click.testing import CliRunner
 
 import config
 import db_skills
+import pdf_lock
 
 
 def writeEnrichedToc() -> None:
@@ -250,3 +251,152 @@ def testCliPicturePayload(data_root: Path) -> None:
             "image_url": base64.b64encode(b"fake-png").decode("utf-8"),
         }
     ]
+
+
+def writeLock(contents: str = "{}") -> Path:
+    """Write a raw per-PDF lock file for ``book``.
+
+    Args:
+        contents: Raw lock file contents.
+
+    Returns:
+        The lock path.
+    """
+    lock_path = config.getLockPath("book")
+    lock_path.parent.mkdir(parents=True, exist_ok=True)
+    lock_path.write_text(contents, encoding="utf-8")
+
+    return lock_path
+
+
+def emptyChapterSummary() -> None:
+    """Clear the chapter summary in the enriched ToC fixture.
+
+    Args:
+        None.
+
+    Returns:
+        None.
+    """
+    enriched = json.loads(
+        config.getEnrichedTocPath("book").read_text(encoding="utf-8")
+    )
+    enriched["chapters"]["1"]["summary"] = ""
+    config.getEnrichedTocPath("book").write_text(
+        json.dumps(enriched), encoding="utf-8"
+    )
+
+
+def emptySectionSummary() -> None:
+    """Clear the first section summary in the enriched ToC fixture.
+
+    Args:
+        None.
+
+    Returns:
+        None.
+    """
+    enriched = json.loads(
+        config.getEnrichedTocPath("book").read_text(encoding="utf-8")
+    )
+    enriched["chapters"]["1"]["sections"]["1"]["summary"] = ""
+    config.getEnrichedTocPath("book").write_text(
+        json.dumps(enriched), encoding="utf-8"
+    )
+
+
+@pytest.mark.parametrize(
+    "arguments",
+    [
+        ["--chapsum"],
+        ["--secsum", "1"],
+        ["--secraw", "1.1"],
+        ["--picid", "4"],
+    ],
+)
+def testCliBlocksAllOptionsWhileSummaryLockIsActive(
+    data_root: Path,
+    monkeypatch: pytest.MonkeyPatch,
+    arguments: list[str],
+) -> None:
+    """Every option refuses to read while a live summary lock exists."""
+    writeEnrichedToc()
+    createTable()
+    writeLock()
+    monkeypatch.setattr(pdf_lock, "isLockActive", lambda _lock_data: True)
+
+    result = CliRunner().invoke(
+        db_skills.skillsCommand, ["book", *arguments]
+    )
+
+    assert isinstance(result.exception, RuntimeError)
+    assert "already running" in str(result.exception)
+
+
+def testCliRemovesStaleLockBeforeReading(data_root: Path) -> None:
+    """A lock left by a dead process is removed and the query proceeds."""
+    writeEnrichedToc()
+    createTable()
+    lock_path = writeLock(
+        json.dumps(
+            {
+                "pid": 2**31 - 1,
+                "pdf_name": "book",
+                "started_at": "2026-10-28T00:00:00Z",
+            }
+        )
+    )
+
+    result = CliRunner().invoke(
+        db_skills.skillsCommand, ["book", "--chapsum"]
+    )
+
+    assert result.exit_code == 0
+    assert "Chapter summary" in result.output
+    assert not lock_path.exists()
+
+
+def testCliEmptyChapterSummaryRaises(data_root: Path) -> None:
+    """--chapsum tells the agent to rerun the generator when data is empty."""
+    writeEnrichedToc()
+    emptyChapterSummary()
+    createTable()
+
+    result = CliRunner().invoke(
+        db_skills.skillsCommand, ["book", "--chapsum"]
+    )
+
+    assert isinstance(result.exception, RuntimeError)
+    assert "Summary generation is incomplete" in str(result.exception)
+    assert "summary_generator.py" in str(result.exception)
+
+
+def testCliEmptySectionSummaryRaises(data_root: Path) -> None:
+    """--secsum rejects any empty summary in the requested chapters."""
+    writeEnrichedToc()
+    emptySectionSummary()
+    createTable()
+
+    result = CliRunner().invoke(
+        db_skills.skillsCommand, ["book", "--secsum", "1"]
+    )
+
+    assert isinstance(result.exception, RuntimeError)
+    assert "Section 1.1" in str(result.exception)
+
+
+def testCliRawSectionIgnoresEmptySummaries(data_root: Path) -> None:
+    """--secraw still works while summaries are missing."""
+    writeEnrichedToc()
+    emptyChapterSummary()
+    emptySectionSummary()
+    createTable()
+
+    result = CliRunner().invoke(
+        db_skills.skillsCommand, ["book", "--secraw", "1.1"]
+    )
+
+    payload = json.loads(result.stdout)
+
+    assert result.exit_code == 0
+    assert "PAGES 11-12" in payload[0]["text"]

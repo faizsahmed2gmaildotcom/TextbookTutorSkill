@@ -22,6 +22,14 @@ class Item:
     page_range: tuple[int, int] = (10**9, -1)
 
 
+@dataclass
+class PopulateResult:
+    """Outcome of a LanceDB populate operation."""
+
+    table: Any
+    reused: bool
+
+
 def getEncoder() -> Any:
     """Return the process-wide embedding model, loading it on first use.
 
@@ -242,7 +250,7 @@ def populateLanceDb(
     table_name: str,
     toc_structure: dict,
     force: bool = False,
-) -> Any:
+) -> PopulateResult:
     """Create or reuse a LanceDB table populated with textbook chunks.
 
     Args:
@@ -253,7 +261,7 @@ def populateLanceDb(
         force: Drop and rebuild an existing table.
 
     Returns:
-        The open LanceDB table.
+        The open table and whether it was reused.
 
     Raises:
         FileNotFoundError: If ``jsonl_path`` does not exist.
@@ -267,7 +275,10 @@ def populateLanceDb(
     if tableExists(database, table_name):
         if not force:
             logger.info("Reusing existing LanceDB table %s", table_name)
-            return database.open_table(table_name)
+            return PopulateResult(
+                table=database.open_table(table_name),
+                reused=True,
+            )
 
         logger.info("Dropping existing LanceDB table %s", table_name)
         database.drop_table(table_name)
@@ -287,7 +298,7 @@ def populateLanceDb(
     logger.info("Creating full-text search index on the 'text' column")
     table.create_fts_index(field_names="text")
 
-    return table
+    return PopulateResult(table=table, reused=False)
 
 
 def openLanceDbTable(db_uri: Path, table_name: str) -> Any:

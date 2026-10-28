@@ -1,15 +1,15 @@
 """Runtime paths and constants shared by every textbook-tutor script."""
 
-import os
 import re
 from pathlib import Path
 
 
 TABLE_NAME_INVALID_PATTERN = re.compile(r"[^A-Za-z0-9_.-]")
 
-DATA_ROOT = Path(
-    os.environ.get("TEXTBOOK_TUTOR_DATA_ROOT", str(Path.cwd()))
-).expanduser().resolve()
+SCRIPTS_DIR = Path(__file__).resolve().parent
+SKILL_DIR = SCRIPTS_DIR.parent
+
+DATA_ROOT = Path.cwd().resolve()
 
 CHUNKS_DIR = DATA_ROOT / "chunks"
 TOC_RAW_DIR = DATA_ROOT / "toc_raw"
@@ -17,7 +17,7 @@ TOC_PARSED_DIR = DATA_ROOT / "toc_parsed"
 TOC_ENRICHED_DIR = DATA_ROOT / "toc_enriched"
 PICTURES_DIR = DATA_ROOT / "pictures"
 LANCEDB_DATA_DIR = DATA_ROOT / "lancedb_data"
-SUMMARIES_DIR = DATA_ROOT / "summaries"
+LOGS_DIR = DATA_ROOT / "logs"
 
 EMBEDDING_MODEL_NAME = "Qwen/Qwen3-Embedding-0.6B"
 EMBEDDING_MAX_SEQ_LENGTH = 1024
@@ -30,6 +30,12 @@ METADATA_FILENAME_TEMPLATE = "{pdf_name}.meta.json"
 TOC_RAW_FILENAME_TEMPLATE = "{pdf_name}.txt"
 TOC_JSON_FILENAME_TEMPLATE = "{pdf_name}.json"
 LANCE_TABLE_DIR_TEMPLATE = "{pdf_name}.lance"
+LOCK_FILENAME_TEMPLATE = ".{pdf_name}.lock"
+LOG_FILENAME_TEMPLATE = "{pdf_name}.log"
+
+SETTINGS_FILENAME = "settings.py"
+SETTINGS_EXAMPLE_FILENAME = "settings-example.py"
+SUMMARY_GENERATOR_FILENAME = "summary_generator.py"
 
 
 def getChunksPath(pdf_name: str) -> Path:
@@ -131,25 +137,61 @@ def getLanceTableDir(pdf_name: str) -> Path:
     )
 
 
-def getSummariesDir(pdf_name: str) -> Path:
-    """Return the summary workspace for one PDF.
+def getLockPath(pdf_name: str) -> Path:
+    """Return the per-PDF summary mutex path.
 
     Args:
         pdf_name: PDF file name without its extension.
 
     Returns:
-        Path to ``summaries/<pdf_name>``.
+        Path to ``toc_enriched/.<pdf_name>.lock``.
     """
-    return SUMMARIES_DIR / pdf_name
+    return TOC_ENRICHED_DIR / LOCK_FILENAME_TEMPLATE.format(pdf_name=pdf_name)
 
 
-def getManifestPath(pdf_name: str) -> Path:
-    """Return the summary manifest path for one PDF.
+def getLogPath(pdf_name: str) -> Path:
+    """Return the background log path for one PDF.
 
     Args:
         pdf_name: PDF file name without its extension.
 
     Returns:
-        Path to ``summaries/<pdf_name>/manifest.json``.
+        Path to ``logs/<pdf_name>.log``.
     """
-    return getSummariesDir(pdf_name) / "manifest.json"
+    return LOGS_DIR / LOG_FILENAME_TEMPLATE.format(pdf_name=pdf_name)
+
+
+def getSettingsPath() -> Path:
+    """Return the user-managed OpenAI settings path.
+
+    Args:
+        None.
+
+    Returns:
+        Path to ``scripts/settings.py``.
+    """
+    return SCRIPTS_DIR / SETTINGS_FILENAME
+
+
+def getSettingsExamplePath() -> Path:
+    """Return the committed settings template path.
+
+    Args:
+        None.
+
+    Returns:
+        Path to ``scripts/settings-example.py``.
+    """
+    return SCRIPTS_DIR / SETTINGS_EXAMPLE_FILENAME
+
+
+def getSummaryGeneratorPath() -> Path:
+    """Return the standalone summary generator path.
+
+    Args:
+        None.
+
+    Returns:
+        Path to ``scripts/summary_generator.py``.
+    """
+    return SCRIPTS_DIR / SUMMARY_GENERATOR_FILENAME

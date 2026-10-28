@@ -5,13 +5,15 @@ __pycache__/
 .idea/
 .lancedb/
 
+scripts/settings.py
+
 chunks/
 toc_raw/
 toc_parsed/
 toc_enriched/
 pictures/
 lancedb_data/
-summaries/
+logs/
 temp/
 temp.json
 temp.txt

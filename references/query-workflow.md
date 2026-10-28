@@ -86,6 +86,8 @@ Use pictures only when the question is about a figure, diagram, chart, or visual
 
 ## Error Handling
 
+- `RuntimeError: Summary generation is already running` means the background generator owns `toc_enriched/.<pdf name>.lock`. Do not retry in a loop and do not delete the lock. Tell the user generation is still running and show `tail -n 20 "logs/<pdf name>.log"`.
+- `RuntimeError: Summary generation is incomplete` means `--chapsum` or `--secsum` found an empty summary. Relaunch the background generator command from `references/summary-generation.md`; completed summaries are skipped.
 - `FileNotFoundError` for `toc_enriched/<pdf_name>.json` or `lancedb_data/<pdf_name>.lance` means the pipeline is incomplete; return to the preprocessing/indexing steps.
 - `IndexError` / `ClickException: Section c.s not found` means the requested section has no indexed chunks. Retry with a neighbouring section.
 - A `click.UsageError` means zero or multiple options were passed; pass exactly one.

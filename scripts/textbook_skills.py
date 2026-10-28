@@ -9,6 +9,41 @@ from logging_config import getLogger
 logger = getLogger(__name__)
 
 
+def buildSummaryRerunCommand(pdf_name: str) -> str:
+    """Build the background command that resumes summary generation.
+
+    Args:
+        pdf_name: PDF file name without its extension.
+
+    Returns:
+        A detached ``nohup`` command writing to the PDF's log file.
+    """
+    return (
+        f'mkdir -p logs && nohup python '
+        f'"{config.getSummaryGeneratorPath()}" "{pdf_name}" '
+        f'>> "logs/{pdf_name}.log" 2>&1 &'
+    )
+
+
+def raiseForEmptySummaries(book_name: str, missing: list[str]) -> None:
+    """Raise when requested summaries have not been generated yet.
+
+    Args:
+        book_name: PDF file name without its extension.
+        missing: Human-readable chapter and section labels.
+
+    Returns:
+        None.
+
+    Raises:
+        RuntimeError: Always, naming the missing entries and rerun command.
+    """
+    raise RuntimeError(
+        f"Summary generation is incomplete for '{book_name}': missing "
+        f"{', '.join(missing)}. Rerun: {buildSummaryRerunCommand(book_name)}"
+    )
+
+
 class Skills:
     """Retrieval operations exposed to the textbook-tutor workflow."""
 
@@ -32,8 +67,20 @@ class Skills:
 
         Returns:
             A newline-joined summary block for all chapters.
+
+        Raises:
+            RuntimeError: If any chapter summary is empty.
         """
         logger.info("Getting chapter summaries for %s", self.book_name)
+
+        missing_summaries = [
+            f"Chapter {chapter_id}"
+            for chapter_id, chapter_meta in self.book_data["chapters"].items()
+            if not str(chapter_meta.get("summary", "")).strip()
+        ]
+
+        if missing_summaries:
+            raiseForEmptySummaries(self.book_name, missing_summaries)
 
         extracted_summaries: list[str] = []
 
@@ -55,11 +102,35 @@ class Skills:
 
         Returns:
             A newline-joined summary block; unknown chapters are skipped.
+
+        Raises:
+            RuntimeError: If any requested chapter or section summary is empty.
         """
         logger.info(
             "Getting section summaries for chapters %s",
             ", ".join(str(chapter) for chapter in chapters),
         )
+
+        missing_summaries: list[str] = []
+
+        for chapter_id in (str(chapter) for chapter in chapters):
+            if chapter_id not in self.book_data["chapters"]:
+                logger.warning("Data for chapter %s not found", chapter_id)
+                continue
+
+            chapter_meta = self.book_data["chapters"][chapter_id]
+
+            if not str(chapter_meta.get("summary", "")).strip():
+                missing_summaries.append(f"Chapter {chapter_id}")
+
+            for section_id, section_meta in chapter_meta["sections"].items():
+                if not str(section_meta.get("summary", "")).strip():
+                    missing_summaries.append(
+                        f"Section {chapter_id}.{section_id}"
+                    )
+
+        if missing_summaries:
+            raiseForEmptySummaries(self.book_name, missing_summaries)
 
         extracted_summaries: list[str] = []
 

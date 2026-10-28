@@ -33,7 +33,7 @@ def data_root(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> Path:
     monkeypatch.setattr(config, "TOC_ENRICHED_DIR", tmp_path / "toc_enriched")
     monkeypatch.setattr(config, "PICTURES_DIR", tmp_path / "pictures")
     monkeypatch.setattr(config, "LANCEDB_DATA_DIR", tmp_path / "lancedb_data")
-    monkeypatch.setattr(config, "SUMMARIES_DIR", tmp_path / "summaries")
+    monkeypatch.setattr(config, "LOGS_DIR", tmp_path / "logs")
 
     return tmp_path
 

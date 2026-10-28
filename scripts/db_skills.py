@@ -6,6 +6,7 @@ import click
 
 import config
 import lancedb_store
+import pdf_lock
 from logging_config import setupLogging
 from schemas import EnrichedToc
 from textbook_skills import Skills
@@ -154,6 +155,7 @@ def skillsCommand(
 
     Raises:
         click.UsageError: If zero or multiple options are supplied.
+        RuntimeError: If summary generation is active or a summary is empty.
         FileNotFoundError: If the enriched ToC or LanceDB table is missing.
     """
     setupLogging()
@@ -164,6 +166,8 @@ def skillsCommand(
         raise click.UsageError(
             "Specify exactly one of --chapsum, --secsum, --secraw, or --picid."
         )
+
+    pdf_lock.assertNoActiveLock(pdf_name)
 
     enriched_path = config.getEnrichedTocPath(pdf_name)
     table_dir = config.getLanceTableDir(pdf_name)

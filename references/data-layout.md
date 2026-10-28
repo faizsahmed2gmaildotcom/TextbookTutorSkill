@@ -1,6 +1,6 @@
 # Data Layout and Page Rules
 
-All generated data lives under one data root. The default is the current working directory; set `TEXTBOOK_TUTOR_DATA_ROOT` to pin it.
+All generated data lives under the current working directory. There is no environment variable override.
 
 ```text
 <data_root>/
@@ -9,14 +9,12 @@ All generated data lives under one data root. The default is the current working
 │   └── <pdf_name>.meta.json
 ├── toc_raw/<pdf_name>.txt
 ├── toc_parsed/<pdf_name>.json
-├── toc_enriched/<pdf_name>.json
+├── toc_enriched/
+│   ├── <pdf_name>.json
+│   └── .<pdf_name>.lock
 ├── pictures/<pdf_name>/pic_<id>.png
 ├── lancedb_data/<pdf_name>.lance/
-└── summaries/<pdf_name>/
-    ├── manifest.json
-    ├── content/
-    ├── sections/
-    └── chapters/
+└── logs/<pdf_name>.log
 ```
 
 `<pdf_name>` is `Path(pdf_path).stem`. Two books with the same stem collide; use separate data roots or rename one file.
@@ -60,7 +58,7 @@ These are intentional, not bugs to fix:
 - Every other chapter's `end` is the next chapter's mapped `start - 1`.
 - A section's `end` equals the next section's mapped `start`, so adjacent sections share a boundary page.
 - The last section's `end` equals the chapter `end`.
-- `toc_parsed` keeps `thinking` and raw dotted section IDs (`"1.1"`); it is never rewritten after the ToC subagent writes it. `toc_enriched` omits `thinking` and uses normalized section IDs (`"1"`), which is why summaries are applied only there.
+- `toc_parsed` keeps `thinking` and raw dotted section IDs (`"1.1"`); it is never rewritten after the ToC subagent writes it. `toc_enriched` omits `thinking` and uses normalized section IDs (`"1"`), which is why summaries are stored only there.
 
 Only crashes and data-shape problems were fixed: missing page labels no longer raise, empty provenance no longer raises, and chapter-level chunk rows are read correctly.
 
@@ -84,9 +82,12 @@ Table name: the PDF stem with characters outside `[A-Za-z0-9_.-]` replaced by `_
 
 Empty-string IDs, rather than `null`, keep `WHERE` filters working for chapter-level and section-level queries.
 
-## Summary Workspace
+## Summary Generation
 
-- `manifest.json` lists all section and chapter tasks with absolute content/output paths.
-- `content/` holds raw text handed to subagents.
-- `sections/<chapter>.<section>.json` and `chapters/<chapter>.json` hold `{"summary": "..."}`.
-- `--apply-summaries` writes summaries only into `toc_enriched`; `toc_parsed` stays the raw subagent output.
+- `summary_generator.py` writes section summaries first, then chapter summaries, into `toc_enriched/<pdf_name>.json`.
+- It reads `scripts/settings.py` for the OpenAI-compatible endpoint and model.
+- It holds `toc_enriched/.<pdf_name>.lock` while it runs. `postprocess_toc.py`, `db_populate.py`, and every `db_skills.py` option refuse to run while the lock is active.
+- The lock stores the writer PID, PDF name, and UTC start time. Stale locks are detected through process inspection and removed automatically.
+- The enriched ToC is atomically rewritten after every completed summary, so interrupted runs resume by skipping non-empty summaries.
+- Logs are appended to `logs/<pdf_name>.log` by the shell redirection in the launch command.
+- `toc_parsed` is never read or rewritten by summary generation.

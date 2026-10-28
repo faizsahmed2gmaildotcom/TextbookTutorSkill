@@ -211,13 +211,14 @@ def testPopulateLanceDbCreatesTableAndFts(
     )
     records = lancedb_store.buildRecords(chunks, toc, FakeEncoder())
 
-    assert table.count_rows() == 2
+    assert not table.reused
+    assert table.table.count_rows() == 2
     assert (db_uri / "book.lance").exists()
     assert records[0]["chapter_id"] == "1"
     assert records[0]["section_id"] == "1"
     assert records[1]["section_id"] == "1"
 
-    hits = table.search("alpha", query_type="fts").limit(1).to_pandas()
+    hits = table.table.search("alpha", query_type="fts").limit(1).to_pandas()
     assert len(hits) == 1
 
 
@@ -241,6 +242,9 @@ def testPopulateLanceDbReusesAndRebuilds(tmp_path: Path, monkeypatch) -> None:
         jsonl_path, db_uri, "book", toc, force=True
     )
 
-    assert first_table.count_rows() == 1
-    assert reused_table.count_rows() == 1
-    assert rebuilt_table.count_rows() == 1
+    assert first_table.table.count_rows() == 1
+    assert reused_table.table.count_rows() == 1
+    assert rebuilt_table.table.count_rows() == 1
+    assert not first_table.reused
+    assert reused_table.reused
+    assert not rebuilt_table.reused
